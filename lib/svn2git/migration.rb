@@ -12,7 +12,9 @@ module Svn2Git
       @options = parse(args)
       if @options[:rebase]
          show_help_message('Too many arguments') if args.size > 0
-         verify_working_tree_is_clean
+         if !@options[:bare]
+            verify_working_tree_is_clean
+         end
       else
          show_help_message('Missing SVN_URL parameter') if args.empty? && @options[:clone]
          show_help_message('Too many arguments') if args.size > 1
