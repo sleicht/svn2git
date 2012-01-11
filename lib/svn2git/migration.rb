@@ -30,7 +30,6 @@ module Svn2Git
       end
       fix_tags
       fix_branches
-      #fix_trunk
       optimize_repos
     end
 
@@ -238,6 +237,11 @@ module Svn2Git
       # '*' character used to indicate the currently selected branch.}
       cmd = 'git '
       cmd += "--git-dir='#{repos}' " unless repos == ''
+
+      if @options[:rebase]
+         run_command("#{_cmd} svn fetch")
+      end
+
       @local = run_command("#{cmd} branch -l --no-color").split(/\n/).collect{ |b| b.gsub(/\*/,'').strip }
       @remote = run_command("#{cmd} branch -r --no-color").split(/\n/).collect{ |b| b.gsub(/\*/,'').strip }
 
@@ -287,13 +291,9 @@ module Svn2Git
       svn_branches = @remote - @tags
       svn_branches.delete_if { |b| b.strip !~ %r{^svn\/} }
 
-      if @options[:rebase]
-         run_command("#{_cmd} svn fetch")
-      end
-
       svn_branches.each do |branch|
         branch = branch.gsub(/^svn\//,'').strip
-        if @options[:rebase] && (@local.include?(branch) || branch == 'trunk')           
+        if !@options[:bare] && @options[:rebase] && (@local.include?(branch) || branch == 'trunk')
           lbranch = branch
           lbranch = 'master' if branch == 'trunk'
           run_command("#{_cmd} checkout -f \"#{lbranch}\"")
@@ -304,21 +304,6 @@ module Svn2Git
         next if @local.include?(branch)
         run_command("#{_cmd} branch \"#{branch}\" \"remotes/svn/#{branch}\"")
         run_command("#{_cmd} branch -d -r \"svn/#{branch}\"")
-      end
-    end
-
-    def fix_trunk
-       repos = @options[:repository]
-       _cmd = 'git '
-       _cmd += "--git-dir='#{repos}' " unless repos == ''
-
-      trunk = @remote.find { |b| b.strip == 'trunk' }
-      if trunk && ! @options[:rebase]
-        run_command("#{_cmd} checkout svn/trunk")
-        run_command("#{_cmd} branch -D master")
-        run_command("#{_cmd} checkout -f -b master")
-      else
-        run_command("#{_cmd} checkout -f master")
       end
     end
 
