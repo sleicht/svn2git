@@ -239,7 +239,7 @@ module Svn2Git
       cmd += "--git-dir='#{repos}' " unless repos == ''
 
       if @options[:rebase]
-         run_command("#{_cmd} svn fetch")
+         run_command("#{cmd} svn fetch")
       end
 
       @local = run_command("#{cmd} branch -l --no-color").split(/\n/).collect{ |b| b.gsub(/\*/,'').strip }
