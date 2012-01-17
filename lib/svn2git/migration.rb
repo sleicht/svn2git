@@ -317,7 +317,7 @@ module Svn2Git
             run_command("git rebase \"new#{branch}\"")
             run_command("git push")
             run_command("popd")
-            run_command("rm -rf #{_repos}"))
+            run_command("rm -rf #{_repos}")
             run_command("#{_cmd} branch -d \"new#{branch}\"")
           else
             run_command("#{_cmd} checkout -f \"#{lbranch}\"")
