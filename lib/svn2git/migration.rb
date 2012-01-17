@@ -298,7 +298,6 @@ module Svn2Git
         else
           __cmd += " #{repos} #{repos}/tmp"
         end
-        run_command("#{__cmd}")
         _repos += "/tmp/"
       end
       _cmd += "--git-dir='#{repos}' " unless repos == ''
