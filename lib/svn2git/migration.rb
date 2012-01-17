@@ -314,6 +314,7 @@ module Svn2Git
             end
             run_command("rm -rf #{_repos}")
             run_command("#{_cmd} branch -D \"new#{branch}\"")
+            run_command("#{_cmd} branch -d -r \"svn/#{branch}\"")
           else
             run_command("#{_cmd} checkout -f \"#{lbranch}\"")
             run_command("#{_cmd} rebase \"remotes/svn/#{branch}\"")
