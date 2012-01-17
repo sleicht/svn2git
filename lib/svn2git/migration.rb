@@ -320,7 +320,7 @@ module Svn2Git
               run_command("git push origin \"new#{branch}local\":\"refs/heads/#{branch}\"")
             end
             run_command("rm -rf #{_repos}")
-            run_command("#{_cmd} branch -d \"new#{branch}\"")
+            run_command("#{_cmd} branch -D \"new#{branch}\"")
           else
             run_command("#{_cmd} checkout -f \"#{lbranch}\"")
             run_command("#{_cmd} rebase \"remotes/svn/#{branch}\"")
