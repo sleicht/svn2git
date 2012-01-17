@@ -305,9 +305,10 @@ module Svn2Git
             Dir.chdir("#{_repos}") do
               run_command("git branch \"new#{branch}local\" \"remotes/origin/new#{branch}\"")
               if lbranch != 'master'
-                run_command("git branch \"#{branch}local\" \"remotes/origin/#{branch}\"")
+                lbranch += "local"
+                run_command("git branch \"#{lbranch}\" \"remotes/origin/#{branch}\"")
               end
-              run_command("git checkout -f \"#{lbranch}local\"")
+              run_command("git checkout -f \"#{lbranch}\"")
               run_command("git rebase \"new#{branch}local\"")
               run_command("git push origin \"new#{branch}local\":\"refs/heads/#{branch}\"")
             end
