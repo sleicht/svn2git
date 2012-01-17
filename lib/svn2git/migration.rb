@@ -284,11 +284,11 @@ module Svn2Git
 
       _repos = repos
       if @options[:bare] && @options[:rebase]
-        __cmd = 'git clone -l '
+        __cmd = "git clone -l "
         if repos == ''
-          __cmd += ' . ./tmp'
+          __cmd += " . ./tmp"
         else
-          __cmd += ' #{repos} #{repos}/tmp'
+          __cmd += " #{repos} #{repos}/tmp"
         end
         run_command("#{__cmd}")
         _repos += "/tmp/"
@@ -300,7 +300,7 @@ module Svn2Git
         if @options[:rebase] && (@local.include?(branch) || branch == 'trunk')
           lbranch = branch
           lbranch = 'master' if branch == 'trunk'
-          if @options[:bare] && _repos != ''
+          if @options[:bare] && _repos != '' && __cmd != ''
             run_command("#{_cmd} branch \"new#{branch}\" \"remotes/svn/#{branch}\"")
             run_command("#{__cmd}")
             run_command("pushd #{_repos}")
