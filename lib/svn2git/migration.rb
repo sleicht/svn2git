@@ -303,10 +303,13 @@ module Svn2Git
             run_command("#{_cmd} branch \"new#{branch}\" \"remotes/svn/#{branch}\"")
             run_command("#{__cmd}")
             Dir.chdir("#{_repos}") do
-              run_command("git branch \"new#{branch}\" \"remotes/origin/new#{branch}\"")
-              run_command("git checkout -f \"#{lbranch}\"")
-              run_command("git rebase \"new#{branch}\"")
-              run_command("git push")
+              run_command("git branch \"new#{branch}local\" \"remotes/origin/new#{branch}\"")
+              if lbranch != 'master'
+                run_command("git branch \"#{branch}local\" \"remotes/origin/#{branch}\"")
+              end
+              run_command("git checkout -f \"#{lbranch}local\"")
+              run_command("git rebase \"new#{branch}local\"")
+              run_command("git push origin \"new#{branch}local\":\"refs/heads/#{branch}\"")
             end
             run_command("rm -rf #{_repos}")
             run_command("#{_cmd} branch -d \"new#{branch}\"")
