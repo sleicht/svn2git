@@ -333,7 +333,6 @@ module Svn2Git
         run_command("#{_cmd} branch \"#{branch}\" \"remotes/svn/#{branch}\"")
         run_command("#{_cmd} branch -d -r \"svn/#{branch}\"")
       end
-      run_command("#{_cmd} push")
     end
 
     def optimize_repos
