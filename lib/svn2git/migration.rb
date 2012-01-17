@@ -287,17 +287,42 @@ module Svn2Git
       repos = @options[:repository]
  
       _cmd = 'git '
-      _cmd += "--git-dir='#{repos}' " unless repos == ''
       svn_branches = @remote - @tags
       svn_branches.delete_if { |b| b.strip !~ %r{^svn\/} }
 
+      _repos = repos
+      if @options[:bare] && @options[:rebase]
+        __cmd = 'git clone -l '
+        if repos == ''
+          __cmd += ' . ./tmp'
+        else
+          __cmd += ' #{repos} #{repos}/tmp'
+        end
+        run_command("#{__cmd}")
+        _repos += "/tmp/"
+      end
+      _cmd += "--git-dir='#{repos}' " unless repos == ''
+
       svn_branches.each do |branch|
         branch = branch.gsub(/^svn\//,'').strip
-        if !@options[:bare] && @options[:rebase] && (@local.include?(branch) || branch == 'trunk')
+        if @options[:rebase] && (@local.include?(branch) || branch == 'trunk')
           lbranch = branch
           lbranch = 'master' if branch == 'trunk'
-          run_command("#{_cmd} checkout -f \"#{lbranch}\"")
-          run_command("#{_cmd} rebase \"remotes/svn/#{branch}\"")
+          if @options[:bare] && _repos != ''
+            run_command("#{_cmd} branch \"new#{branch}\" \"remotes/svn/#{branch}\"")
+            run_command("#{__cmd}")
+            run_command("pushd #{_repos}")
+            run_command("git branch \"new#{branch}\" \"remotes/origin/new#{branch}\"")
+            run_command("git checkout -f \"#{lbranch}\"")
+            run_command("git rebase \"new#{branch}\"")
+            run_command("git push")
+            run_command("popd")
+            run_command("rm -rf #{_repos}"))
+            run_command("#{_cmd} branch -d \"new#{branch}\"")
+          else
+            run_command("#{_cmd} checkout -f \"#{lbranch}\"")
+            run_command("#{_cmd} rebase \"remotes/svn/#{branch}\"")
+          end
           next
         end
 
@@ -305,6 +330,7 @@ module Svn2Git
         run_command("#{_cmd} branch \"#{branch}\" \"remotes/svn/#{branch}\"")
         run_command("#{_cmd} branch -d -r \"svn/#{branch}\"")
       end
+      run_command("#{_cmd} push")
     end
 
     def optimize_repos
