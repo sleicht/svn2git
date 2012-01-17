@@ -302,12 +302,12 @@ module Svn2Git
           if @options[:bare] && _repos != '' && __cmd != ''
             run_command("#{_cmd} branch \"new#{branch}\" \"remotes/svn/#{branch}\"")
             run_command("#{__cmd}")
-            run_command("pushd #{_repos}")
-            run_command("git branch \"new#{branch}\" \"remotes/origin/new#{branch}\"")
-            run_command("git checkout -f \"#{lbranch}\"")
-            run_command("git rebase \"new#{branch}\"")
-            run_command("git push")
-            run_command("popd")
+            Dir.chdir("#{_repos}") do
+              run_command("git branch \"new#{branch}\" \"remotes/origin/new#{branch}\"")
+              run_command("git checkout -f \"#{lbranch}\"")
+              run_command("git rebase \"new#{branch}\"")
+              run_command("git push")
+            end
             run_command("rm -rf #{_repos}")
             run_command("#{_cmd} branch -d \"new#{branch}\"")
           else
