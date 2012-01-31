@@ -256,8 +256,10 @@ module Svn2Git
       _cmd += "--git-dir='#{repos}' " unless repos == ''
 
       current = {}
-      current['user.name']  = run_command("#{_cmd} config --local --get user.name")
-      current['user.email'] = run_command("#{_cmd} config --local --get user.email")
+      if !@options[:bare]
+        current['user.name']  = run_command("#{_cmd} config --local --get user.name")
+        current['user.email'] = run_command("#{_cmd} config --local --get user.email")
+      end
 
       @tags.each do |tag|
         tag = tag.strip
