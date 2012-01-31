@@ -250,14 +250,15 @@ module Svn2Git
     end
 
     def fix_tags
-      current = {}
-      current['user.name']  = run_command("git config --local --get user.name")
-      current['user.email'] = run_command("git config --local --get user.email")
-
       repos = @options[:repository]
- 
+
       _cmd = 'git '
       _cmd += "--git-dir='#{repos}' " unless repos == ''
+
+      current = {}
+      current['user.name']  = run_command("#{_cmd} config --local --get user.name")
+      current['user.email'] = run_command("#{_cmd} config --local --get user.email")
+
       @tags.each do |tag|
         tag = tag.strip
         id      = tag.gsub(%r{^svn\/tags\/}, '').strip
