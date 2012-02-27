@@ -113,7 +113,7 @@ module Svn2Git
           options[:nominimizeurl] = true
         end
 
-        opts.on('--revision REV', 'Start importing from SVN revision') do |revision|
+        opts.on('--revision START_REV[:END_REV]', 'Start importing from SVN revision START_REV; optionally end at END_REV') do |revision|
           options[:revision] = revision
         end
 
@@ -151,7 +151,7 @@ module Svn2Git
       options
     end
 
-    private
+  private
 
     def clone!
       trunk = @options[:trunk]
@@ -213,7 +213,11 @@ module Svn2Git
       cmd = "git "
       cmd += "--git-dir='#{repos}' " unless repos == ''
       cmd += 'svn fetch '
-      cmd += "-r #{revision}:HEAD " unless revision.nil?
+      unless revision.nil?
+        range = revision.split(":")
+        range[1] = "HEAD" unless range[1]
+        cmd += "-r #{range[0]}:#{range[1]} "
+      end
       unless exclude.empty?
         # Add exclude paths to the command line; some versions of git support
         # this for fetch only, later also for init.
@@ -257,8 +261,8 @@ module Svn2Git
 
       current = {}
       if !@options[:bare]
-        current['user.name']  = run_command("#{_cmd} config --local --get user.name")
-        current['user.email'] = run_command("#{_cmd} config --local --get user.email")
+        current['user.name']  = run_command("#{_cmd} config --local --get user.name", false)
+        current['user.email'] = run_command("#{_cmd} config --local --get user.email", false)
       end
 
       @tags.each do |tag|
@@ -275,15 +279,18 @@ module Svn2Git
       end
 
     ensure
-      _cmd = 'git '
-      _cmd += "--git-dir='#{repos}' " unless repos == ''
-      current.each_pair do |name, value|
-        # If a line was read, then there was a config value so restore it.
-        # Otherwise unset the value because originally there was none.
-        if value[-1] == "\n"
-          run_command("#{_cmd} config --local #{name} '#{value.chomp("\n")}'")
-        else
-          run_command("#{_cmd} config --local --unset #{name}")
+      # We only change the git config values if there are @tags available.  So it stands to reason we should revert them only in that case.
+      unless @tags.empty?
+        _cmd = 'git '
+        _cmd += "--git-dir='#{repos}' " unless repos == ''
+        current.each_pair do |name, value|
+          # If a line was read, then there was a config value so restore it.
+          # Otherwise unset the value because originally there was none.
+          if value[-1] == "\n"
+            run_command("#{_cmd} config --local #{name} '#{value.chomp("\n")}'")
+          else
+            run_command("#{_cmd} config --local --unset #{name}")
+          end
         end
       end
     end
@@ -350,7 +357,7 @@ module Svn2Git
       run_command("#{_cmd} gc")
     end
 
-    def run_command(cmd)
+    def run_command(cmd, exit_on_error=true)
       log "Running command: #{cmd}"
 
       ret = ''
@@ -363,7 +370,7 @@ module Svn2Git
         end
       end
 
-      unless $?.success?
+      if exit_on_error && ($?.success)
         $stderr.puts "command failed (#{$?.exitstatus}):\n#{cmd}"
         exit 1
       end
