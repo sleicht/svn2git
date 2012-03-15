@@ -174,7 +174,7 @@ repository which name on its own line. This would allow you to easily
 redirect the output of this command sequence to ~/.svn2git/authors and have
 a very good starting point for your mapping.
 
-    $ svn log | grep -E "r[0-9]+ \| .+ \|" | awk '{print $3}' | sort | uniq
+    $ svn log --quiet --xml | grep author | sort -u | sed 's:.*>\(.*\)<.*:\1 = :'
 
 Debugging
 ---------
