@@ -240,7 +240,7 @@ module Svn2Git
       # Get the list of local and remote branches, taking care to ignore console color codes and ignoring the
       # '*' character used to indicate the currently selected branch.
       cmd = 'git '
-      cmd += "--git-dir='#{repos}' " unless repos == ''+
+      cmd += "--git-dir='#{repos}' " unless repos == ''
 
       if @options[:rebase]
          run_command("#{cmd} svn fetch")
@@ -254,13 +254,17 @@ module Svn2Git
     end
 
     def fix_tags
-      current = {}
-      current['user.name']  = run_command("git config --local --get user.name", false)
-      current['user.email'] = run_command("git config --local --get user.email", false)
       repos = @options[:repository]
 
       _cmd = 'git '
       _cmd += "--git-dir='#{repos}' " unless repos == ''
+
+      current = {}
+      if !@options[:bare]
+        current['user.name']  = run_command("#{_cmd} config --local --get user.name", false)
+        current['user.email'] = run_command("#{_cmd} config --local --get user.email", false)
+      end
+
       @tags.each do |tag|
         tag = tag.strip
         id      = tag.gsub(%r{^svn\/tags\/}, '').strip
@@ -301,9 +305,20 @@ module Svn2Git
       repos = @options[:repository]
  
       _cmd = 'git '
-      _cmd += "--git-dir='#{repos}' " unless repos == ''
       svn_branches = @remote - @tags
       svn_branches.delete_if { |b| b.strip !~ %r{^svn\/} }
+
+      _repos = repos
+      if @options[:bare] && @options[:rebase]
+        __cmd = "git clone -l "
+        if repos == ''
+          __cmd += " . ./tmp"
+        else
+          __cmd += " #{repos} #{repos}/tmp"
+        end
+        _repos += "/tmp/"
+      end
+      _cmd += "--git-dir='#{repos}' " unless repos == ''
 
       if @options[:rebase]
          run_command("#{_cmd} svn fetch")
@@ -311,12 +326,30 @@ module Svn2Git
 
       svn_branches.each do |branch|
         branch = branch.gsub(/^svn\//,'').strip
-        if !@options[:bare] && @options[:rebase] && (@local.include?(branch) || branch == 'trunk')
+        if @options[:rebase] && (@local.include?(branch) || branch == 'trunk')
            lbranch = branch
            lbranch = 'master' if branch == 'trunk'
-           run_command("#{_cmd} checkout -f \"#{lbranch}\"")
-           run_command("#{_cmd} rebase \"remotes/svn/#{branch}\"")
-           next
+           if @options[:bare] && _repos != '' && __cmd != ''
+              run_command("#{_cmd} branch \"new#{branch}\" \"remotes/svn/#{branch}\"")
+              run_command("#{__cmd}")
+              Dir.chdir("#{_repos}") do
+                 run_command("git branch \"new#{branch}local\" \"remotes/origin/new#{branch}\"")
+                 if lbranch != 'master'
+                    lbranch += "local"
+                    run_command("git branch \"#{lbranch}\" \"remotes/origin/#{branch}\"")
+                 end
+                 run_command("git checkout -f \"#{lbranch}\"")
+                 run_command("git rebase \"new#{branch}local\"")
+                 run_command("git push origin \"new#{branch}local\":\"refs/heads/#{branch}\"")
+              end
+              run_command("rm -rf #{_repos}")
+              run_command("#{_cmd} branch -D \"new#{branch}\"")
+              run_command("#{_cmd} branch -d -r \"svn/#{branch}\"")
+           else
+              run_command("#{_cmd} checkout -f \"#{lbranch}\"")
+              run_command("#{_cmd} rebase \"remotes/svn/#{branch}\"")
+           end
+        next
         end
 
         next if @local.include?(branch)
