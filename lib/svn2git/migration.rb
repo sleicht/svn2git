@@ -380,7 +380,7 @@ module Svn2Git
       _cmd = 'git '
       _cmd += "--git-dir='#{repos}' " unless repos == ''
 
-      status = run_command('#{_cmd} status --porcelain --untracked-files=no')
+      status = run_command("#{_cmd} status --porcelain --untracked-files=no")
       unless status.strip == ''
         puts 'You have local pending changes.  The working tree must be clean in order to continue.'
         exit(-1)
