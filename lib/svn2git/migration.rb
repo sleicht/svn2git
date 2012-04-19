@@ -287,15 +287,17 @@ module Svn2Git
       end
 
     ensure
+      _cmd = 'git '
+      _cmd += "--git-dir='#{repos}' " unless repos == ''
       # We only change the git config values if there are @tags available.  So it stands to reason we should revert them only in that case.
       unless @tags.empty?
         current.each_pair do |name, value|
           # If a line was read, then there was a config value so restore it.
           # Otherwise unset the value because originally there was none.
           if value.strip != ''
-            run_command("git config --local #{name} '#{value.strip}'")
+            run_command("#{_cmd} config --local #{name} '#{value.strip}'")
           else
-            run_command("git config --local --unset #{name}")
+            run_command("#{_cmd} config --local --unset #{name}")
           end
         end
       end
