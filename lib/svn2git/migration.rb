@@ -46,6 +46,7 @@ module Svn2Git
       options[:exclude] = []
       options[:revision] = nil
       options[:username] = nil
+      options[:password] = nil
       options[:clone] = true
       options[:bare] = false
       options[:repository] = '';
@@ -77,6 +78,10 @@ module Svn2Git
         opts.on('--username NAME', 'Username for transports that needs it (http(s), svn)') do |username|
           options[:username] = username
         end
+        
+        opts.on('--password PASSWORD', 'Password for transports that needs it (http(s), svn)') do |password|	
+          options[:password] = password	
+        end        
 
         opts.on('--trunk TRUNK_PATH', 'Subpath to trunk from repository URL (default: trunk)') do |trunk|
           options[:trunk] = trunk
@@ -164,6 +169,7 @@ module Svn2Git
       exclude = @options[:exclude]
       revision = @options[:revision]
       username = @options[:username]
+      password = @options[:password]      
       repos = @options[:repository] 
 
       cmd = "git "
@@ -178,6 +184,7 @@ module Svn2Git
         # Non-standard repository layout.  The repository root is effectively 'trunk.'
         cmd += "svn init --prefix=svn/ "
         cmd += "--username=#{username} " unless username.nil?
+        cmd += "--password=#{password} " unless password.nil?
         cmd += "--no-metadata " unless metadata
         if nominimizeurl
           cmd += "--no-minimize-url "
@@ -190,6 +197,7 @@ module Svn2Git
 
         # Add each component to the command that was passed as an argument.
         cmd += "--username=#{username} " unless username.nil?
+        cmd += "--password=#{password} " unless password.nil?     
         cmd += "--no-metadata " unless metadata
         if nominimizeurl
           cmd += "--no-minimize-url "
