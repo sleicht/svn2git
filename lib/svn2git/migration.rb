@@ -28,8 +28,8 @@ module Svn2Git
       else
         clone!
       end
-      fix_tags
       fix_branches
+      fix_tags
       optimize_repos
     end
 
