@@ -341,7 +341,7 @@ module Svn2Git
 
       svn_branches.each do |branch|
         branch = branch.gsub(/^svn\//,'').strip
-        if @options[:rebase] && (@local.include?(branch) || branch == 'trunk')
+        if @options[:rebase] && (@local.include?(branch) || branch == 'trunk') && !(branch == 'trunk' && @options[:trunk].nil?)
            lbranch = branch
            lbranch = 'master' if branch == 'trunk'
            if @options[:bare] && _repos != '' && __cmd != ''
