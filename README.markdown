@@ -160,7 +160,7 @@ Then pass an _authors_ option to svn2git pointing to your file:
 
     $ svn2git http://svn.example.com/path/to/repo --authors ~/authors.txt
 
-Alternatively, you can place the authors file into `~/.svn2git/authors` and
+Alternatively, you can place the authors file into ~/.svn2git/authors and
 svn2git will load it out of there. This allows you to build up one authors
 file for all your projects and have it loaded for each repository that you
 migrate.
@@ -171,10 +171,10 @@ the logs from the svn repository, pulls out all the names from the commits,
 sorts them, and then reduces the list to only unique names. So, in the end
 it outputs a list of usernames of the people that made commits to the svn
 repository which name on its own line. This would allow you to easily
-redirect the output of this command sequence to `~/.svn2git/authors` and have
+redirect the output of this command sequence to ~/.svn2git/authors and have
 a very good starting point for your mapping.
 
-    $ svn log --quiet --xml | grep author | sort -u | sed 's:.*>\(.*\)<.*:\1 = :'
+    $ svn -q log http://path/to/root/of/project | grep -E "r[0-9]+ \| .+ \|" | awk '{print $3}' | sort | uniq
 
 Debugging
 ---------
@@ -183,7 +183,7 @@ If you're having problems with converting your repository and you're not sure wh
 try turning on verbose logging.  This will print out more information from the
 underlying git-svn process.
 
-You can turn on verbose logging with the `-v` or `--verbose` flags, like so:
+You can turn on verbose logging with the '-v' or '--verbose' flags, like so:
 
     $ svn2git http://svn.yoursite.com/path/to/repo --verbose
 
