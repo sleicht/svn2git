@@ -227,7 +227,7 @@ module Svn2Git
       if not authors.nil?
         cmd = "git "
         cmd += "--git-dir='#{repos}' " unless repos == ''
-        cmd += "config --local svn.authorsfile #{authors}"
+        cmd += "config  svn.authorsfile #{authors}"
         run_command(cmd)
       end
 
@@ -282,8 +282,8 @@ module Svn2Git
 
       current = {}
       if !@options[:bare]
-        current['user.name']  = run_command("#{_cmd} config --local --get user.name", false)
-        current['user.email'] = run_command("#{_cmd} config --local --get user.email", false)
+        current['user.name']  = run_command("#{_cmd} config  --get user.name", false)
+        current['user.email'] = run_command("#{_cmd} config  --get user.email", false)
       end
 
       @tags.each do |tag|
@@ -294,8 +294,8 @@ module Svn2Git
         author  = run_command("#{_cmd} log -1 --pretty=format:'%an' #{tag}")
         email   = run_command("#{_cmd} log -1 --pretty=format:'%ae' #{tag}")
 
-        run_command("#{_cmd} config --local user.name '#{escape_quotes(author)}'")
-        run_command("#{_cmd} config --local user.email '#{escape_quotes(email)}'")
+        run_command("#{_cmd} config  user.name '#{escape_quotes(author)}'")
+        run_command("#{_cmd} config  user.email '#{escape_quotes(email)}'")
 
         cmd = ''
         cmd << "GIT_COMMITTER_DATE='#{escape_quotes(date)}' "
@@ -316,9 +316,9 @@ module Svn2Git
           # If a line was read, then there was a config value so restore it.
           # Otherwise unset the value because originally there was none.
           if value.strip != ''
-            run_command("#{_cmd} config --local #{name} '#{value.strip}'")
+            run_command("#{_cmd} config  #{name} '#{value.strip}'")
           else
-            run_command("#{_cmd} config --local --unset #{name}")
+            run_command("#{_cmd} config  --unset #{name}")
           end
         end
       end
