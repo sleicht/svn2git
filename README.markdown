@@ -216,3 +216,7 @@ FAQ
     that very same tag in the original svn repo. This is only due to the fact
     that the svn tags allow changesets in them, making them not just annotated
     tags.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/sleicht/svn2git/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
